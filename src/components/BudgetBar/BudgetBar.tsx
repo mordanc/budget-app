@@ -1,171 +1,192 @@
-import React, { useEffect, useRef, useState } from "react";
-import styled from "styled-components";
-import InputLabel from "@material-ui/core/InputLabel";
-import FormControl from "@material-ui/core/FormControl";
-import Select from "@material-ui/core/Select";
-import MenuItem from "@material-ui/core/MenuItem";
+import {
+  Box,
+  FormControl,
+  FormHelperText,
+  FormLabel,
+  HStack,
+  Input,
+  Progress,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+  VStack,
+  Stack,
+  Button,
+  Heading,
+  Flex,
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  AlertTitle,
+  CloseButton,
+  Editable,
+  EditableInput,
+  EditablePreview,
+  Text,
+  useToast,
+  Popover,
+  PopoverArrow,
+  PopoverBody,
+  PopoverCloseButton,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTrigger,
+} from "@chakra-ui/react";
+import { EditIcon } from "@chakra-ui/icons";
+import React, { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import {
+  editBudgetAmount,
+  removeBudget,
+} from "../../features/Budgets/budgetSlice";
 
-import TextField from "@material-ui/core/TextField";
-import { makeStyles } from "@material-ui/core/styles";
-import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
-import Button from "@material-ui/core/Button";
-import SubtractAmount from "./inputs/SubtractAmount";
+export type BudgetBarProps = {
+  title: string;
+  maxBudget: number;
+};
 
-const Bar = styled.div<{ bgColor: string; percentage: number }>`
-  /* background-color: ${(props) => props.bgColor || "white"}; */
-  background: ${(props) =>
-    `linear-gradient(90deg, ${props.bgColor || "#ffc0cb"} ${
-      props.percentage || `100`
-    }%, white 0%)`};
-`;
-const theme = createMuiTheme({
-  overrides: {
-    // Style sheet name ⚛️
-    MuiInputLabel: {
-      // Name of the rule
-      root: {
-        // Some CSS
-        color: "rgb(176, 168, 156)",
-      },
-    },
-  },
-});
-
-const useStyles = makeStyles({
-  root: {
-    width: 120,
-  },
-  input: {
-    color: "rgb(176, 168, 156)",
-  },
-  label: {
-    color: "white",
-  },
-  test: {
-    height: 36,
-  },
-});
-
-function usePrevious(value): any {
-  const ref = useRef();
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
+function Toast({ title, description, status }) {
+  const toast = useToast();
+  return (
+    <Button
+      onClick={() =>
+        toast({
+          title: "Account created.",
+          description: "We've created your account for you.",
+          status: "success",
+          duration: 9000,
+          isClosable: true,
+        })
+      }
+    >
+      Show Toast
+    </Button>
+  );
 }
 
-function BudgetBar() {
-  const [bgColor, setBgColor] = useState("black");
+function BudgetBar({ title, maxBudget }: BudgetBarProps) {
   const [percentage, setPercentage] = useState(100);
-  const [title, setTitle] = useState("Food");
-  const [budget, setBudget] = useState(0);
-  const [remainingBudget, setRemainingBudget] = useState(budget);
-  const classes = useStyles();
+  const [remainingBudget, setRemainingBudget] = useState(maxBudget);
+  const [userInput, setUserInput] = useState(0);
 
-  const [isEditingBudget, setIsEditingBudget] = useState(false);
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
-
-  const prevBudget = usePrevious({ budget });
-
-  // const amountLeft = ((percentage / 100) * budget).toPrecision(2);
+  const dispatch = useDispatch();
+  const toast = useToast();
 
   useEffect(() => {
-    if (prevBudget?.budget < budget && budget > remainingBudget) {
-      setRemainingBudget(remainingBudget + (budget - prevBudget?.budget));
-    }
-    const newPercentage = Math.round(remainingBudget / budget) * 100;
-    setPercentage(newPercentage);
-    console.log(newPercentage);
-  }, [budget, remainingBudget]);
-
-  const subtractFromBudget = (amount) => {
-    setRemainingBudget(budget - amount);
-  };
+    setPercentage((remainingBudget / maxBudget) * 100);
+  }, [remainingBudget, maxBudget]);
 
   return (
-    <ThemeProvider theme={theme}>
-      <div style={{ margin: "1rem 0" }}>
-        <div style={{ display: "flex" }}>
-          {isEditingTitle ? (
-            <TextField
-              classes={{ root: classes.root }}
-              InputProps={{
-                className: classes.input,
+    <Stack spacing="1rem">
+      <Flex justify="space-between">
+        <HStack>
+          <Heading size="lg">{title}</Heading>
+          <Popover size="sm" colorScheme='blue'>
+            <PopoverTrigger>
+              <CloseButton />
+            </PopoverTrigger>
+            <PopoverContent>
+              <PopoverArrow />
+              <PopoverCloseButton />
+              <PopoverHeader>Are you sure?</PopoverHeader>
+              <PopoverBody>
+                <Button
+                  colorScheme="red"
+                  onClick={() => dispatch(removeBudget(title))}
+                >
+                  Yes
+                </Button>
+              </PopoverBody>
+            </PopoverContent>
+          </Popover>
+          {/* <CloseButton onClick={() => dispatch(removeBudget(title))} /> */}
+        </HStack>
+        <Heading>
+          <HStack>
+            <Editable
+              onChange={(val) => {
+                const newValue = Number(val);
+                if (newValue) {
+                  setRemainingBudget(newValue);
+                } else {
+                  toast({
+                    title: "Enter a number for budget amount",
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                  });
+                }
               }}
-              color="secondary"
-              type="text"
-              autoFocus={true}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              onBlur={() => setIsEditingTitle(false)}
-            />
-          ) : (
-            <span onClick={() => setIsEditingTitle(true)}>{title}</span>
-          )}
-          &nbsp; -&nbsp;
-          {isEditingBudget ? (
-            <TextField
-              classes={{ root: classes.root }}
-              InputProps={{
-                className: classes.input,
+              value={String(remainingBudget)}
+            >
+              <EditablePreview />
+              <EditableInput />
+            </Editable>
+            <span>/</span>
+            <Editable
+              onChange={(val) => {
+                const newValue = Number(val);
+                if (newValue) {
+                  dispatch(editBudgetAmount({ title, maxBudget: newValue }));
+                } else {
+                  toast({
+                    title: "Enter a number for budget amount",
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                  });
+                }
               }}
-              color="secondary"
-              type="number"
-              autoFocus={true}
-              value={budget}
-              onChange={(e) => setBudget(Number(e.target.value))}
-              onBlur={() => setIsEditingBudget(false)}
-            />
-          ) : (
-            <span onClick={() => setIsEditingBudget(true)}>{budget}</span>
-          )}
-        </div>
-        <Bar bgColor={bgColor} percentage={percentage}>
-          {remainingBudget} / {budget}
-        </Bar>
-        <FormControl style={{ minWidth: 120 }}>
-          <InputLabel htmlFor="color-native-simple">Color</InputLabel>
-          <Select
-            label={{ color: "primary" }}
-            variant="filled"
-            classes={{ root: classes.input, filled: classes.label }}
-            style={{ color: "inherit" }}
-            value={bgColor}
-            // @ts-ignore
-            onChange={(e) => setBgColor(e.target.value)}
-            inputProps={{
-              name: "color",
-              id: "color-native-simple",
+              value={String(maxBudget)}
+            >
+              <EditablePreview />
+              <EditableInput />
+            </Editable>
+            <EditIcon fontSize="md" />
+          </HStack>
+        </Heading>
+      </Flex>
+      <Progress value={percentage} />
+      <HStack justify="space-between">
+        <NumberInput
+          onChange={(valueString) => setUserInput(Number(valueString))}
+          max={maxBudget}
+          min={0}
+        >
+          <NumberInputField />
+          <NumberInputStepper>
+            <NumberIncrementStepper />
+            <NumberDecrementStepper />
+          </NumberInputStepper>
+        </NumberInput>
+        <HStack>
+          <Button
+            onClick={() => {
+              const newRemainingBudget = remainingBudget - userInput;
+              if (newRemainingBudget < 0) return;
+              setRemainingBudget(newRemainingBudget);
             }}
+            colorScheme="red"
+            size="md"
           >
-            <MenuItem value="#010B12" style={{ cursor: "pointer" }}>
-              black
-            </MenuItem>
-            <MenuItem value="#1261A0">blue</MenuItem>
-            <MenuItem value="#D92122">red</MenuItem>
-            <MenuItem value="#28A428">green</MenuItem>
-            <MenuItem value="#FADA5F">yellow</MenuItem>
-          </Select>
-        </FormControl>
-        {/* <FormControl onSubmit={(e) => e.preventDefault()}>
-          <TextField
-            classes={{ root: classes.test }}
-            InputProps={{
-              className: classes.input,
-            }}
-            color="secondary"
-            type="number"
-            autoFocus={true}
-            value={budget}
-            onChange={(e) => setPercentage(Number(e.target.value))}
-          />
-          <Button variant="contained" color="secondary">
-            +
+            Subtract
           </Button>
-        </FormControl> */}
-        <SubtractAmount subtractFromBudget={subtractFromBudget} />
-      </div>
-    </ThemeProvider>
+          <Button
+            onClick={() => {
+              const newRemainingBudget = remainingBudget + userInput;
+              if (newRemainingBudget > maxBudget) return;
+              setRemainingBudget(newRemainingBudget);
+            }}
+            colorScheme="blue"
+            size="md"
+          >
+            Add
+          </Button>
+        </HStack>
+      </HStack>
+    </Stack>
   );
 }
 
