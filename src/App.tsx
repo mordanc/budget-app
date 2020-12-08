@@ -1,6 +1,6 @@
 import React from "react";
 
-import BudgetBar from "./components/BudgetBar";
+import BudgetBar from "./components/BudgetBar/BudgetBar";
 
 import "./App.css";
 
