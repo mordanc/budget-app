@@ -4,25 +4,29 @@ import { AppThunk, RootState } from "../../app/store";
 type Budget = {
   title: string;
   maxBudget: number;
+  history?: string[];
 };
 
-interface CounterState {
+interface BudgetState {
   value: number;
   budgets: Budget[];
+  selectedBudget: Budget | null;
 }
 
-const initialState: CounterState = {
+const initialState: BudgetState = {
   value: 0,
   budgets: [],
+  selectedBudget: null,
 };
 
 export const budgetSlice = createSlice({
-  name: "counter",
+  name: "budget",
   initialState,
   reducers: {
     addBudget: (state, action: PayloadAction<Budget>) => {
       return { ...state, budgets: [...state.budgets, action.payload] };
     },
+
     removeBudget: (state, action: PayloadAction<string>) => {
       return {
         ...state,
@@ -31,6 +35,7 @@ export const budgetSlice = createSlice({
         ],
       };
     },
+
     editBudgetAmount: (state, action: PayloadAction<Budget>) => {
       const { title, maxBudget } = action.payload;
       const newBudgets = state.budgets.map((budget) => {
@@ -44,6 +49,17 @@ export const budgetSlice = createSlice({
         budgets: newBudgets,
       };
     },
+
+    selectBudget: (state, action: PayloadAction<Budget>) => {
+      const { title } = action.payload || {};
+      const selectedBudget =
+        state.budgets.find((budget) => budget.title === title) || null;
+
+      return {
+        ...state,
+        selectedBudget,
+      };
+    },
   },
 });
 
@@ -51,6 +67,7 @@ export const {
   addBudget,
   removeBudget,
   editBudgetAmount,
+  selectBudget,
 } = budgetSlice.actions;
 
 // The function below is called a thunk and allows us to perform async logic. It
@@ -63,8 +80,12 @@ export const {
 //   }, 1000);
 // };
 
-export const selectCount = (state: RootState) => state.counter.value;
-
 export const selectBudgets = (state: RootState) => state.budgets.budgets;
+
+export const selectBudgetTitles = (state: RootState) =>
+  state.budgets.budgets.map(({ title }) => title);
+
+export const selectCurrentBudget = (state: RootState) =>
+  state.budgets.selectedBudget;
 
 export default budgetSlice.reducer;
