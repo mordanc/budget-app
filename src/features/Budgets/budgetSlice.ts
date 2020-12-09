@@ -60,6 +60,21 @@ export const budgetSlice = createSlice({
         selectedBudget,
       };
     },
+
+    addBudgetHistory: (state, action: PayloadAction<any>) => {
+      const { title, description } = action.payload;
+
+      const budgets = state.budgets.map((budget) => {
+        if (budget.title === title) {
+          return {
+            ...budget,
+            history: [...(budget.history || []), description],
+          };
+        }
+      });
+
+      return { ...state, history };
+    },
   },
 });
 
@@ -68,6 +83,7 @@ export const {
   removeBudget,
   editBudgetAmount,
   selectBudget,
+  addBudgetHistory,
 } = budgetSlice.actions;
 
 // The function below is called a thunk and allows us to perform async logic. It

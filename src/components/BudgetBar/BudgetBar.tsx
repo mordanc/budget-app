@@ -11,12 +11,15 @@ import {
   Heading,
   Flex,
   Divider,
+  Input,
 } from "@chakra-ui/react";
 
 import ProgressBar from "../ProgressBar";
 import SubtractButton from "../SubtractButton";
 import BudgetHeader from "./BudgetHeader";
 import BudgetDeleteButton from "./BudgetDeleteButton";
+import { useDispatch } from "react-redux";
+import { addBudgetHistory } from "../../features/Budgets/budgetSlice";
 
 export type BudgetBarProps = {
   title: string;
@@ -28,6 +31,9 @@ function BudgetBar({ title, maxBudget }: BudgetBarProps) {
   const [percentage, setPercentage] = useState(100);
   const [remainingBudget, setRemainingBudget] = useState(maxBudget);
   const [userInput, setUserInput] = useState(0);
+  const [description, setDescription] = useState("");
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const newPercentage = (remainingBudget / maxBudget) * 100;
@@ -37,7 +43,10 @@ function BudgetBar({ title, maxBudget }: BudgetBarProps) {
   const subtractFromBudget = () => {
     const newRemainingBudget = remainingBudget - userInput;
     if (newRemainingBudget < 0) return;
+
+    dispatch(addBudgetHistory({ title, description }));
     setRemainingBudget(newRemainingBudget);
+    setDescription("");
   };
 
   const addToBudget = () => {
@@ -73,14 +82,19 @@ function BudgetBar({ title, maxBudget }: BudgetBarProps) {
             <NumberDecrementStepper />
           </NumberInputStepper>
         </NumberInput>
+        <Input
+          placeholder="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
         <HStack>
-          <SubtractButton maxBudget={maxBudget} />
+          {/* <SubtractButton maxBudget={maxBudget} /> */}
           <Button onClick={subtractFromBudget} colorScheme="red" size="md">
             Subtract
           </Button>
-          <Button onClick={addToBudget} colorScheme="blue" size="md">
+          {/* <Button onClick={addToBudget} colorScheme="blue" size="md">
             Add
-          </Button>
+          </Button> */}
         </HStack>
       </HStack>
       <Divider />
