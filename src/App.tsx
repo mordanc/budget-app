@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import "./App.css";
 import {
@@ -31,6 +31,7 @@ function App() {
   const dispatch = useDispatch();
 
   const budgets = useSelector(selectBudgets);
+
   return (
     <div className="App">
       <Container mt={"5%"}>
@@ -85,8 +86,13 @@ function App() {
           Quick Fill
         </Button>
         <Stack spacing="3rem">
-          {budgets.map(({ title, maxBudget }, index) => (
-            <BudgetBar key={title} title={title} maxBudget={maxBudget} />
+          {budgets.map(({ title, maxBudget, history }, index) => (
+            <BudgetBar
+              key={title}
+              title={title}
+              maxBudget={maxBudget}
+              history={history}
+            />
           ))}
         </Stack>
 

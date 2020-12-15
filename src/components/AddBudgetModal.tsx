@@ -41,6 +41,7 @@ function AddBudgetModal({ isOpen, onClose }) {
     if (invalidForm) {
       return;
     }
+
     dispatch(addBudget({ title, maxBudget }));
     onClose();
   };

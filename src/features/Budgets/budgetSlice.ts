@@ -1,10 +1,16 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { stat } from "fs";
 import { AppThunk, RootState } from "../../app/store";
+
+type BudgetHistory = {
+  description: string;
+  amount: number;
+};
 
 type Budget = {
   title: string;
   maxBudget: number;
-  history?: string[];
+  history?: BudgetHistory[];
 };
 
 interface BudgetState {
@@ -62,18 +68,19 @@ export const budgetSlice = createSlice({
     },
 
     addBudgetHistory: (state, action: PayloadAction<any>) => {
-      const { title, description } = action.payload;
+      const { title, description, amount } = action.payload;
 
       const budgets = state.budgets.map((budget) => {
         if (budget.title === title) {
           return {
             ...budget,
-            history: [...(budget.history || []), description],
+            history: [...(budget.history || []), { description, amount }],
           };
         }
+        return budget;
       });
 
-      return { ...state, history };
+      return { ...state, budgets };
     },
   },
 });
@@ -103,5 +110,8 @@ export const selectBudgetTitles = (state: RootState) =>
 
 export const selectCurrentBudget = (state: RootState) =>
   state.budgets.selectedBudget;
+
+export const selectBudgetByName = (title) => (state: RootState) =>
+  state.budgets.budgets.find((budget) => budget.title === title) || null;
 
 export default budgetSlice.reducer;

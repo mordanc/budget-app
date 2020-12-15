@@ -13,21 +13,33 @@ import {
   Divider,
   Input,
 } from "@chakra-ui/react";
+import { useDispatch } from "react-redux";
 
 import ProgressBar from "../ProgressBar";
-import SubtractButton from "../SubtractButton";
 import BudgetHeader from "./BudgetHeader";
 import BudgetDeleteButton from "./BudgetDeleteButton";
-import { useDispatch } from "react-redux";
 import { addBudgetHistory } from "../../features/Budgets/budgetSlice";
 
 export type BudgetBarProps = {
   title: string;
   maxBudget: number;
+  history?: any[];
+};
+
+export const TestInput = ({ description, setDescription }) => {
+  const [text, setText] = useState("");
+
+  return (
+    <Input
+      placeholder="Description"
+      value={description}
+      onChange={(e) => setDescription(e.target.value)}
+    />
+  );
 };
 
 // should show detailed view (history) maybe in drawer view
-function BudgetBar({ title, maxBudget }: BudgetBarProps) {
+function BudgetBar({ title, maxBudget, history }: BudgetBarProps) {
   const [percentage, setPercentage] = useState(100);
   const [remainingBudget, setRemainingBudget] = useState(maxBudget);
   const [userInput, setUserInput] = useState(0);
@@ -44,15 +56,9 @@ function BudgetBar({ title, maxBudget }: BudgetBarProps) {
     const newRemainingBudget = remainingBudget - userInput;
     if (newRemainingBudget < 0) return;
 
-    dispatch(addBudgetHistory({ title, description }));
+    dispatch(addBudgetHistory({ title, description, amount: userInput }));
     setRemainingBudget(newRemainingBudget);
     setDescription("");
-  };
-
-  const addToBudget = () => {
-    const newRemainingBudget = remainingBudget + userInput;
-    if (newRemainingBudget > maxBudget) return;
-    setRemainingBudget(newRemainingBudget);
   };
 
   return (
@@ -67,6 +73,7 @@ function BudgetBar({ title, maxBudget }: BudgetBarProps) {
           remainingBudget={remainingBudget}
           setRemainingBudget={setRemainingBudget}
           maxBudget={maxBudget}
+          history={history}
         />
       </Flex>
       <ProgressBar percentage={percentage} />
@@ -87,14 +94,11 @@ function BudgetBar({ title, maxBudget }: BudgetBarProps) {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
+        {/* <TestInput setDescription={setDescription} description={description} /> */}
         <HStack>
-          {/* <SubtractButton maxBudget={maxBudget} /> */}
           <Button onClick={subtractFromBudget} colorScheme="red" size="md">
             Subtract
           </Button>
-          {/* <Button onClick={addToBudget} colorScheme="blue" size="md">
-            Add
-          </Button> */}
         </HStack>
       </HStack>
       <Divider />
