@@ -63,7 +63,7 @@ function BudgetBar({ title, maxBudget, history }: BudgetBarProps) {
 
   return (
     <Stack spacing="1rem">
-      <Flex justify="space-between">
+      <Flex justify="space-between" direction={["column", "row"]}>
         <HStack>
           <Heading size="lg">{title}</Heading>
           <BudgetDeleteButton title={title} />

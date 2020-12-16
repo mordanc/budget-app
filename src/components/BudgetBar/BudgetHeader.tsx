@@ -58,15 +58,9 @@ function BudgetHeader({
     }
   };
 
-  const openDrawerHandler = () => {
-    onOpen();
-    // dispatch(selectBudget());
-  };
-
   return (
     <Heading>
       <HStack>
-        <EditIcon fontSize="md" />
         <Editable
           onChange={(val) => editBudgetHandler(val, "remaining")}
           value={String(remainingBudget)}
@@ -82,6 +76,7 @@ function BudgetHeader({
           <EditablePreview />
           <EditableInput />
         </Editable>
+        {/* <EditIcon fontSize="md" /> */}
 
         <IconButton
           // @ts-ignore
