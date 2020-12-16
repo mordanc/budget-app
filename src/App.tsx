@@ -33,16 +33,45 @@ function App() {
   const dispatch = useDispatch();
 
   const budgets = useSelector(selectBudgets);
+
   const {
     loginWithRedirect,
     logout,
     user,
     isAuthenticated,
     isLoading,
+    getAccessTokenSilently,
   } = useAuth0();
 
   useEffect(() => {
     console.log({ user });
+  }, [user]);
+
+  useEffect(() => {
+    const getUserMetadata = async () => {
+      try {
+        const accessToken = await getAccessTokenSilently({
+          audience: `https://${process.env.REACT_APP_domain}/api/v2/`,
+          scope: "read:current_user",
+        });
+        console.log({ accessToken });
+
+        const userDetailsByIdUrl = `https://${process.env.REACT_APP_domain}/api/v2/users/${user.sub}`;
+
+        const metadataResponse = await fetch(userDetailsByIdUrl, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        const { user_metadata } = await metadataResponse.json();
+        console.log({ user_metadata });
+      } catch (e) {
+        console.log(e);
+      }
+    };
+
+    getUserMetadata();
   }, [user]);
 
   if (isLoading) {
@@ -51,11 +80,10 @@ function App() {
 
   return (
     <div className="App">
-      {/* <Container mt="0.5rem" id="navbar"> */}
       <HStack mx="1rem" mt="0.5rem" justify="space-between">
         <Heading>Simple Budget</Heading>
         {isAuthenticated ? (
-          <Popover trigger="hover" placement="left">
+          <Popover trigger="click" placement="left">
             <PopoverTrigger>
               <Avatar name={user.name} src={user.picture} />
             </PopoverTrigger>
